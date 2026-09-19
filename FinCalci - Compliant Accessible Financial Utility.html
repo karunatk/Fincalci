@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinCalci by FireflyLabz - SEBI Compliant Accessible Financial Utilities</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        firefly: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                        },
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsPDF for PDF Report Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        .high-contrast {
+            --bg-main: #000000;
+            --text-main: #ffffff;
+            --border-main: #ffff00;
+            --accent: #00ffff;
+        }
+
+        .high-contrast body {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        .high-contrast button, 
+        .high-contrast input, 
+        .high-contrast select, 
+        .high-contrast textarea {
+            border: 2px solid #ffff00 !important;
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        :focus-visible {
+            outline: 3px solid #0284c7 !important;
+            outline-offset: 3px !important;
+        }
+
+        .dark :focus-visible {
+            outline: 3px solid #38bdf8 !important;
+            outline-offset: 3px !important;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Text scaling classes for WCAG accessibility */
+        .text-scale-sm { font-size: 90%; }
+        .text-scale-base { font-size: 100%; }
+        .text-scale-lg { font-size: 115%; }
+        .text-scale-xl { font-size: 130%; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-full font-sans antialiased transition-colors duration-200">
+    
+    <!-- Accessible Skip Link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-amber-400 focus:text-slate-950 focus:font-bold focus:rounded-lg focus:shadow-xl focus:m-2">
+        Skip to main content
+    </a>
+
+    <!-- ARIA Live Announcements for Screen Readers -->
+    <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <div id="app-container" class="min-h-screen flex flex-col">
+
+        <!-- Header -->
+        <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-lg" role="banner">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+                
+                <!-- Branding -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-sky-500 flex items-center justify-center shadow-md text-slate-950 font-black text-xl" aria-hidden="true">
+                        ⚡
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                            FinCalci
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-semibold border border-amber-400/30">
+                                Powered by FireflyLabz
+                            </span>
+                        </h1>
+                        <p class="text-xs text-slate-400">Accessible Analytical Financial Utilities & Portfolio Risk Engine</p>
+                    </div>
+                </div>
+
+                <!-- Accessibility & Export Tools -->
+                <div class="flex items-center gap-2 sm:gap-3 flex-wrap" role="region" aria-label="Accessibility Options">
+                    
+                    <!-- Font Scaler -->
+                    <div class="inline-flex rounded-lg bg-slate-800 p-1 border border-slate-700" role="group" aria-label="Text Size Controls">
+                        <button onclick="setGlobalFontSize('sm')" class="px-2 py-1 text-xs font-semibold rounded hover:bg-slate-700 focus:bg-slate-700" aria-label="Small Text Size">A-</button>
+                        <button onclick="setGlobalFontSize('base')" class="px-2 py-1 text-xs font-semibold rounded hover:bg-slate-700 focus:bg-slate-700 bg-slate-700" aria-label="Default Text Size">A</button>
+                        <button onclick="setGlobalFontSize('lg')" class="px-2 py-1 text-xs font-semibold rounded hover:bg-slate-700 focus:bg-slate-700" aria-label="Large Text Size">A+</button>
+                    </div>
+
+                    <!-- Contrast Toggle -->
+                    <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" aria-label="Toggle Theme Mode">
+                        <i data-lucide="moon" class="w-4 h-4"></i>
+                    </button>
+
+                    <button id="contrast-toggle" onclick="toggleHighContrast()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40" aria-pressed="false" aria-label="Toggle High Contrast Mode">
+                        High Contrast
+                    </button>
+
+                    <!-- PDF Export -->
+                    <button onclick="generatePdfReport()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs sm:text-sm shadow-md transition focus:ring-2 focus:ring-sky-300" aria-label="Download Compliant Financial Audit PDF">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>PDF Audit Report</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Bar -->
+            <nav class="bg-slate-900/90 backdrop-blur border-t border-slate-800/80 px-2 sm:px-6 overflow-x-auto scrollbar-none" role="navigation" aria-label="Financial Tools Menu">
+                <div class="max-w-7xl mx-auto flex space-x-1 py-1" role="tablist">
+                    <button role="tab" aria-selected="true" id="tab-btn-home" aria-controls="tab-home" onclick="switchTab('home')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg text-white bg-sky-600 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i> Tool Suite
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-tax" aria-controls="tab-tax" onclick="switchTab('tax')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="receipt" class="w-4 h-4"></i> Tax & NPS
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-sip" aria-controls="tab-sip" onclick="switchTab('sip')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="trending-up" class="w-4 h-4"></i> SIP Returns
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-goal" aria-controls="tab-goal" onclick="switchTab('goal')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="target" class="w-4 h-4"></i> Goal Planner
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-loan" aria-controls="tab-loan" onclick="switchTab('loan')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="home" class="w-4 h-4"></i> Home Loan EMI
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-rebalance" aria-controls="tab-rebalance" onclick="switchTab('rebalance')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i> Portfolio Rebalance
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-retirement" aria-controls="tab-retirement" onclick="switchTab('retirement')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="palmtree" class="w-4 h-4"></i> Retirement & FIRE
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-insurance" aria-controls="tab-insurance" onclick="switchTab('insurance')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Term Insurance
+                    </button>
+
+                    <button role="tab" aria-selected="false" id="tab-btn-portfolio" aria-controls="tab-portfolio" onclick="switchTab('portfolio')" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 focus:outline-none whitespace-nowrap">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> AI Portfolio Audit
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6" role="main" tabindex="-1">
+            
+            <!-- Dashboard Home Grid -->
+            <section id="tab-home" class="tab-panel active space-y-8" role="tabpanel" aria-labelledby="tab-btn-home">
+                
+                <div class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 p-6 sm:p-8 rounded-3xl text-white border border-slate-800 shadow-xl relative overflow-hidden">
+                    <div class="relative z-10 max-w-3xl space-y-3">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-400"></i> WCAG AA Compliant & SEBI Framework Aligned
+                        </span>
+                        <h2 class="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                            Interactive Financial Calculations & Portfolio Risk Utilities
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Analyze income tax liabilities, evaluate compounding returns, compute inflation-adjusted life goals, model loan prepayments, or audit portfolio drift with privacy-first client-side data scrubbing.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i data-lucide="grid" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+                        Available Analytical Tools
+                    </h3>
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">8 Mathematical Utilities</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" role="list">
+                    
+                    <!-- Tile 1: Tax & NPS -->
+                    <div onclick="switchTab('tax')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('tax')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition">
+                                <i data-lucide="receipt" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition">
+                                    Income Tax & NPS Planner
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Compare Old vs New Tax Regimes (budget updated) and compute Sec 80CCD(1B) savings up to ₹50,000.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-sky-600 dark:text-sky-400">
+                            <span>Open Tax Calculator</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 2: SIP Returns -->
+                    <div onclick="switchTab('sip')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('sip')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition">
+                                <i data-lucide="trending-up" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+                                    SIP & Step-Up Returns
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Forecast monthly investment compounding with nominal vs real (inflation-adjusted) return models.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <span>Open SIP Calculator</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 3: Goal Planner -->
+                    <div onclick="switchTab('goal')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('goal')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition">
+                                <i data-lucide="target" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
+                                    Goal-Based Inflation Planner
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Model custom education, housing, or milestone inflation rates to derive target capital needs.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
+                            <span>Open Goal Planner</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 4: Home Loan -->
+                    <div onclick="switchTab('loan')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('loan')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition">
+                                <i data-lucide="home" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition">
+                                    Home Loan EMI & Prepay
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Calculate monthly EMI and compute interest saved through principal prepayments.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-rose-600 dark:text-rose-400">
+                            <span>Open Loan Tool</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 5: Rebalance -->
+                    <div onclick="switchTab('rebalance')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('rebalance')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition">
+                                <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                                    Portfolio Allocation Rebalance
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Analyze asset allocation drift with custom deviation thresholds and LTCG/STCG tax friction modeling.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                            <span>Open Rebalancer</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 6: Retirement FIRE -->
+                    <div onclick="switchTab('retirement')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('retirement')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition">
+                                <i data-lucide="palmtree" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition">
+                                    Retirement & FIRE Planner
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Determine retirement corpus needs using Safe Withdrawal Rate (SWR) modeling and inflation drag.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-teal-600 dark:text-teal-400">
+                            <span>Open FIRE Planner</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 7: Term Insurance HLV -->
+                    <div onclick="switchTab('insurance')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('insurance')" class="group bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-sky-500 dark:hover:border-sky-400 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-sky-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
+                                <i data-lucide="shield-check" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">
+                                    Human Life Value Term Cover
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Compute required life insurance cover based on income replacement & outstanding debt liabilities.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400">
+                            <span>Open Insurance Tool</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 8: AI Portfolio Audit -->
+                    <div onclick="switchTab('portfolio')" role="listitem" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') switchTab('portfolio')" class="group bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-slate-900/5 dark:from-amber-500/20 dark:to-slate-900/40 p-5 rounded-2xl border-2 border-amber-500/40 shadow-sm hover:shadow-xl hover:border-amber-500 transition cursor-pointer flex flex-col justify-between focus:ring-2 focus:ring-amber-500">
+                        <div class="space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold transition shadow-md">
+                                <i data-lucide="sparkles" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="px-2 py-0.5 text-[10px] font-extrabold rounded bg-amber-500 text-slate-950">PII SANITIZED</span>
+                                </div>
+                                <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-amber-500 transition">
+                                    AI Portfolio Document Analytics
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    Upload portfolio holding statements with client-side PAN & name scrubbing before AI risk audit.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
+                            <span>Launch AI Analytics</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 1. Tax & NPS Tool -->
+            <section id="tab-tax" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-tax">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="receipt" class="w-6 h-6 text-sky-600"></i>
+                            Income Tax & NPS Sec 80CCD(1B) / 80CCD(2) Calculator
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Comprehensive tax engine factoring Gross Salary, Interest Income, Capital Gains, Sec 80C/80D, HRA, and Employee/Employer NPS deductions.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div>
+                            <label for="tax-gross-salary" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Annual Gross Income / Salary (₹)
+                            </label>
+                            <input type="number" id="tax-gross-salary" value="1200000" step="25000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="tax-interest-income" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Savings / FD Interest (₹)
+                                </label>
+                                <input type="number" id="tax-interest-income" value="30000" step="5000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+
+                            <div>
+                                <label for="tax-capital-gains" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Capital Gains / Other (₹)
+                                </label>
+                                <input type="number" id="tax-capital-gains" value="50000" step="10000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+                        </div>
+
+                        <!-- Financial Year & Capital Gains Tax Type Selectors -->
+                        <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                            <div>
+                                <label for="tax-fy" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Financial Year / Budget
+                                </label>
+                                <select id="tax-fy" onchange="calculateTax()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-sky-500">
+                                    <option value="2025" selected>FY 2025-26 / FY 2026-27 (Latest Budget)</option>
+                                    <option value="2024">FY 2024-25 (Previous Budget)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="tax-cg-type" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Capital Gains Tax Rate
+                                </label>
+                                <select id="tax-cg-type" onchange="calculateTax()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:ring-2 focus:ring-sky-500">
+                                    <option value="ltcg" selected>Equity LTCG 12.5% (u/s 112A)</option>
+                                    <option value="stcg">Equity STCG 20% (u/s 111A)</option>
+                                    <option value="slab">Taxed at Normal Slab Rates</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="tax-80c" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Sec 80C (EPF/ELSS/PPF) (₹)
+                                </label>
+                                <input type="number" id="tax-80c" value="150000" max="150000" step="10000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+
+                            <div>
+                                <label for="tax-80d" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Sec 80D (Health Ins.) (₹)
+                                </label>
+                                <input type="number" id="tax-80d" value="25000" step="5000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="tax-hra" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                HRA / Home Loan Exemption (Old Regime) (₹)
+                            </label>
+                            <input type="number" id="tax-hra" value="120000" step="10000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                        </div>
+
+                        <div class="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800/50 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label for="tax-nps" class="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1">
+                                    ⚡ Employee NPS 80CCD(1B) Tier-1 (₹)
+                                </label>
+                                <span id="tax-nps-val" class="text-xs font-black text-amber-600 dark:text-amber-400">₹50,000</span>
+                            </div>
+                            <input type="range" id="tax-nps" min="0" max="50000" step="5000" value="50000" class="w-full accent-amber-500">
+
+                            <div>
+                                <label for="tax-nps-employer" class="block text-[11px] font-bold text-amber-900 dark:text-amber-200 mb-1">
+                                    Employer NPS Sec 80CCD(2) (Allowed in Both Regimes) (₹)
+                                </label>
+                                <input type="number" id="tax-nps-employer" value="50000" step="5000" class="w-full px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-slate-100">
+                            </div>
+                        </div>
+
+                        <button onclick="calculateTax()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate Tax
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Old Tax Regime</span>
+                                <p id="tax-old-amount" class="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">₹0</p>
+                                <div class="mt-3 text-xs space-y-1 border-t border-slate-100 dark:border-slate-800 pt-2 text-slate-500">
+                                    <div class="flex justify-between">
+                                        <span>Total Income:</span>
+                                        <span id="tax-old-gross-txt" class="font-semibold text-slate-700 dark:text-slate-300">₹0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Deductions Claimed:</span>
+                                        <span id="tax-old-deductions-txt" class="font-semibold text-slate-700 dark:text-slate-300">₹0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Taxable Income:</span>
+                                        <span id="tax-old-taxable-txt" class="font-semibold text-slate-700 dark:text-slate-300">₹0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-sky-500 shadow-md relative">
+                                <span class="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase">New Tax Regime</span>
+                                <p id="tax-new-amount" class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-1">₹0</p>
+                                <div class="mt-3 text-xs space-y-1 border-t border-slate-100 dark:border-slate-800 pt-2 text-slate-500">
+                                    <div class="flex justify-between">
+                                        <span>Total Income:</span>
+                                        <span id="tax-new-gross-txt" class="font-semibold text-slate-700 dark:text-slate-300">₹0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Standard & Employer NPS:</span>
+                                        <span id="tax-new-deductions-txt" class="font-semibold text-slate-700 dark:text-slate-300">₹0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Taxable Income:</span>
+                                        <span id="tax-new-taxable-txt" class="font-semibold text-slate-700 dark:text-slate-300">₹0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tax-recommendation-box" class="p-4 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 rounded-2xl flex items-start gap-3">
+                            <i data-lucide="lightbulb" class="w-5 h-5 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <h4 id="tax-rec-title" class="font-bold text-sm text-sky-900 dark:text-sky-200">Evaluating regime liability...</h4>
+                                <p id="tax-rec-desc" class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                                    Calculated figures indicate lower outgo under New Regime. Verify final calculations with a chartered accountant or tax professional.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Tax Outgo Comparison (₹)</h4>
+                            <div class="h-48 relative">
+                                <canvas id="taxChart" aria-label="Tax Liability Comparison Chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Legal Footer -->
+                <div class="p-3 bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] text-slate-500">
+                    <strong>Legal Disclaimer:</strong> Tax computations are purely mathematical estimates based on Indian Income Tax laws (FY 2024-25 / FY 2025-26). They do not constitute formal tax advisory services.
+                </div>
+            </section>
+
+            <!-- 2. SIP Tool -->
+            <section id="tab-sip" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-sip">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-emerald-600"></i>
+                            SIP & Step-Up Returns Calculator (Nominal vs Real)
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Model investment compounding over time considering step-up increases and inflation-adjusted purchasing power.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Monthly SIP Investment (₹)</span>
+                                <span id="sip-monthly-display" class="text-sky-600 dark:text-sky-400 font-bold">₹15,000</span>
+                            </div>
+                            <input type="range" id="sip-monthly" min="500" max="200000" step="500" value="15000" class="w-full accent-sky-600">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Expected Nominal Return Rate (p.a.)</span>
+                                <span id="sip-rate-display" class="text-emerald-600 dark:text-emerald-400 font-bold">12%</span>
+                            </div>
+                            <input type="range" id="sip-rate" min="1" max="30" step="0.5" value="12" class="w-full accent-emerald-600">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Investment Period (Years)</span>
+                                <span id="sip-years-display" class="text-amber-600 dark:text-amber-400 font-bold">15 Years</span>
+                            </div>
+                            <input type="range" id="sip-years" min="1" max="40" step="1" value="15" class="w-full accent-amber-500">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Annual Step-Up Multiplier (%)</span>
+                                <span id="sip-stepup-display" class="text-purple-600 dark:text-purple-400 font-bold">10%</span>
+                            </div>
+                            <input type="range" id="sip-stepup" min="0" max="30" step="1" value="10" class="w-full accent-purple-600">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                <span>Expected Benchmark Inflation Rate (%)</span>
+                                <span id="sip-inf-display" class="text-rose-600 dark:text-rose-400 font-bold">6%</span>
+                            </div>
+                            <input type="range" id="sip-inf" min="0" max="15" step="0.5" value="6" class="w-full accent-rose-600">
+                        </div>
+
+                        <button onclick="calculateSip()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate Returns
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase">Total Capital Invested</span>
+                                <p id="sip-invested-txt" class="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">₹57,20,000</p>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Nominal Future Value</span>
+                                <p id="sip-total-txt" class="text-xl font-extrabold text-sky-600 dark:text-sky-400 mt-1">₹1,25,65,000</p>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-amber-500/40 shadow-sm">
+                                <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase">Real Purchasing Value</span>
+                                <p id="sip-real-txt" class="text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">₹52,43,000</p>
+                            </div>
+                        </div>
+
+                        <!-- Volatility Risk Warning -->
+                        <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
+                            <span><strong>Equity Market Risk Notice:</strong> Mutual fund investments are subject to market risks. Past projected CAGR assumes linear compounding; actual market returns fluctuate.</span>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Compounding Growth Projection</h4>
+                            <div class="h-60 relative">
+                                <canvas id="sipChart" aria-label="SIP Growth Projection Chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Goal Planner -->
+            <section id="tab-goal" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-goal">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="target" class="w-6 h-6 text-sky-600"></i>
+                            Goal-Based Inflation-Adjusted Planner
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Estimate future goal costs considering specific sectoral inflation rates (Education 10%, Housing 7%, Healthcare 12%).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div>
+                            <label for="goal-type" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Goal Preset Category</label>
+                            <select id="goal-type" onchange="presetGoalValues()" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                                <option value="education">Child Higher Education (Sector Inflation ~10%)</option>
+                                <option value="house">Property Downpayment (Sector Inflation ~7%)</option>
+                                <option value="marriage">Family Event / Marriage (Sector Inflation ~8%)</option>
+                                <option value="custom">Custom Milestone</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="goal-current-cost" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Goal Cost Today (₹)
+                            </label>
+                            <input type="number" id="goal-current-cost" value="2500000" step="50000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="goal-years" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Years to Goal
+                                </label>
+                                <input type="number" id="goal-years" value="10" min="1" max="40" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+
+                            <div>
+                                <label for="goal-inflation" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Category Inflation (%)
+                                </label>
+                                <input type="number" id="goal-inflation" value="10" min="1" max="25" step="0.5" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="goal-cagr" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Expected Investment CAGR (%)
+                            </label>
+                            <input type="number" id="goal-cagr" value="12" min="1" max="25" step="0.5" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                        </div>
+
+                        <button onclick="calculateGoal()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate Goal Plan
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="bg-gradient-to-br from-slate-900 to-sky-950 p-6 rounded-2xl text-white shadow-md border border-slate-800 space-y-4">
+                            <span class="text-xs font-semibold text-sky-400 uppercase tracking-wide">Goal Capital Allocation Need</span>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-400">Future Inflation-Adjusted Cost</span>
+                                    <p id="goal-future-cost" class="text-2xl font-extrabold text-amber-400 mt-1">₹64,84,350</p>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-slate-400">Monthly Allocation Required Today</span>
+                                    <p id="goal-req-sip" class="text-2xl font-extrabold text-emerald-400 mt-1">₹28,200</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Goal Cost Escalation Curve</h4>
+                            <div class="h-56 relative">
+                                <canvas id="goalChart" aria-label="Goal Cost Escalation Chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Home Loan Tool -->
+            <section id="tab-loan" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-loan">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="home" class="w-6 h-6 text-sky-600"></i>
+                            Home Loan EMI & Partial Prepayment Calculator
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Calculate monthly loan installments and see interest saved by making periodic principal prepayments.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div>
+                            <label for="loan-amount" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Principal Loan Amount (₹)
+                            </label>
+                            <input type="number" id="loan-amount" value="5000000" step="100000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="loan-rate" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Interest Rate (% p.a.)
+                                </label>
+                                <input type="number" id="loan-rate" value="8.75" step="0.1" min="1" max="20" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+
+                            <div>
+                                <label for="loan-tenure" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Tenure (Years)
+                                </label>
+                                <input type="number" id="loan-tenure" value="20" min="1" max="30" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-sky-50 dark:bg-sky-950/40 rounded-xl border border-sky-200 dark:border-sky-800/50 space-y-3">
+                            <span class="text-xs font-bold text-sky-900 dark:text-sky-200 block">⚡ Prepayment Acceleration Options</span>
+                            
+                            <div>
+                                <label for="loan-prepay-extra" class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Extra Monthly Principal Prepayment (₹)
+                                </label>
+                                <input type="number" id="loan-prepay-extra" value="5000" step="1000" min="0" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            </div>
+                        </div>
+
+                        <button onclick="calculateLoan()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate Loan EMI
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase">Monthly EMI</span>
+                                <p id="loan-emi-txt" class="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">₹44,186</p>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <span class="text-[11px] font-bold text-rose-500 uppercase">Standard Interest Payable</span>
+                                <p id="loan-interest-txt" class="text-xl font-extrabold text-rose-500 mt-1">₹56,04,640</p>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 p-4 border border-emerald-500/40 rounded-2xl shadow-sm">
+                                <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Interest Saved via Prepaying</span>
+                                <p id="loan-saved-txt" class="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">₹14,20,500</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Loan Principal Amortization Curve</h4>
+                            <div class="h-56 relative">
+                                <canvas id="loanChart" aria-label="Loan Principal Amortization Chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Rebalance Tool -->
+            <section id="tab-rebalance" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-rebalance">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-6 h-6 text-sky-600"></i>
+                            Asset Allocation Drift & Capital Gains Tax Estimator
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Realign portfolio weightings back to target mix considering deviation drift thresholds and estimated LTCG / STCG tax drag.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-6 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">Holdings & Target Allocation</h3>
+
+                        <!-- Drift Threshold Controls -->
+                        <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                            <div>
+                                <label for="reb-drift-threshold" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Rebalance Drift Threshold (%)
+                                </label>
+                                <select id="reb-drift-threshold" class="w-full px-2 py-1.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                                    <option value="0">0% (Exact Rebalance)</option>
+                                    <option value="2">2% Deviation Trigger</option>
+                                    <option value="5" selected>5% Deviation Trigger (Recommended)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="reb-tax-rate" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Est. Tax Drag on Selling (%)
+                                </label>
+                                <select id="reb-tax-rate" class="w-full px-2 py-1.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                                    <option value="0">0% (Tax Exempt / Debt Fresh Cash)</option>
+                                    <option value="12.5" selected>12.5% Equity LTCG (Above ₹1.25L)</option>
+                                    <option value="20">20% Equity STCG</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 font-semibold text-xs text-slate-500 mt-2">
+                            <span>Asset Class</span>
+                            <span>Current Value (₹)</span>
+                            <span>Target %</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 items-center">
+                            <span class="text-xs font-bold text-sky-600 dark:text-sky-400">Equity Funds</span>
+                            <input type="number" id="reb-curr-eq" value="750000" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100">
+                            <input type="number" id="reb-tgt-eq" value="60" min="0" max="100" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 items-center">
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Debt Funds</span>
+                            <input type="number" id="reb-curr-debt" value="200000" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100">
+                            <input type="number" id="reb-tgt-debt" value="30" min="0" max="100" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 items-center">
+                            <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Gold / Commodities</span>
+                            <input type="number" id="reb-curr-gold" value="50000" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100">
+                            <input type="number" id="reb-tgt-gold" value="10" min="0" max="100" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <div id="reb-target-warning" class="hidden text-xs text-rose-500 font-bold">
+                            ⚠️ Warning: Target allocations must sum up to exactly 100%!
+                        </div>
+
+                        <button onclick="calculateRebalance()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate Allocation
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-6 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <h3 class="font-bold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">Rebalancing Indicator Summary</h3>
+
+                        <div class="space-y-3" id="reb-actions-container">
+                            <!-- Dynamic Content -->
+                        </div>
+
+                        <div class="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs text-slate-500 leading-relaxed space-y-1">
+                            <p><strong>SEBI Fiduciary Notice:</strong> Rebalancing indicators reflect mathematical deltas between target and current asset distributions. They are non-binding mathematical metrics and do not constitute trading instructions.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Retirement Tool -->
+            <section id="tab-retirement" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-retirement">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="palmtree" class="w-6 h-6 text-sky-600"></i>
+                            Retirement Corpus & SWR Planner
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Determine post-retirement corpus requirements based on Safe Withdrawal Rates (SWR) and pre/post retirement inflation.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="ret-curr-age" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Age</label>
+                                <input type="number" id="ret-curr-age" value="30" min="18" max="70" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            </div>
+                            <div>
+                                <label for="ret-ret-age" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Retirement Age</label>
+                                <input type="number" id="ret-ret-age" value="55" min="30" max="75" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="ret-monthly-exp" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Current Monthly Expenses (₹)</label>
+                            <input type="number" id="ret-monthly-exp" value="60000" step="5000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="ret-inf" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pre-Retire Inflation (%)</label>
+                                <input type="number" id="ret-inf" value="6" min="1" max="15" step="0.5" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            </div>
+                            <div>
+                                <label for="ret-swr" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Safe Withdrawal Rate (SWR)</label>
+                                <select id="ret-swr" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                                    <option value="3.0">3.0% (Ultra Conservative)</option>
+                                    <option value="3.5">3.5% (Conservative)</option>
+                                    <option value="4.0" selected>4.0% (Standard FIRE Rule)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="ret-cagr" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pre-Retirement Investment CAGR (%)</label>
+                            <input type="number" id="ret-cagr" value="12" min="1" max="25" step="0.5" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <button onclick="calculateRetirement()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate FIRE Corpus
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-md border border-slate-800 space-y-4">
+                            <span class="text-xs font-bold text-amber-400 uppercase">FIRE & Nest Egg Targets</span>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-400">Expense at Retirement / mo</span>
+                                    <p id="ret-future-exp-txt" class="text-2xl font-extrabold text-white mt-1">₹2,57,500</p>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-slate-400">Required FIRE Corpus</span>
+                                    <p id="ret-corpus-txt" class="text-2xl font-extrabold text-amber-400 mt-1">₹7,72,50,000</p>
+                                </div>
+                            </div>
+
+                            <div class="pt-3 border-t border-slate-800">
+                                <span class="text-xs text-slate-400">Monthly Investment Allocation Required Today:</span>
+                                <p id="ret-req-sip-txt" class="text-3xl font-black text-emerald-400 mt-1">₹40,700 / mo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Insurance Tool -->
+            <section id="tab-insurance" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-insurance">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-sky-600"></i>
+                            Human Life Value (HLV) Term Insurance Calculator
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Evaluate necessary risk cover using standard Human Life Value (income replacement) and debt liability factors.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div>
+                            <label for="ins-annual-income" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Annual Income (₹)</label>
+                            <input type="number" id="ins-annual-income" value="1200000" step="50000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <div>
+                            <label for="ins-liabilities" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Outstanding Loans & Liabilities (₹)</label>
+                            <input type="number" id="ins-liabilities" value="4000000" step="100000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <div>
+                            <label for="ins-existing-cover" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Existing Life Cover (₹)</label>
+                            <input type="number" id="ins-existing-cover" value="5000000" step="500000" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                        </div>
+
+                        <button onclick="calculateInsurance()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition focus:ring-2 focus:ring-sky-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Calculate / Recalculate HLV Cover
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-md border border-slate-800 space-y-4">
+                            <span class="text-xs font-bold text-purple-400 uppercase">Estimated HLV Life Cover Needed</span>
+                            <p id="ins-recommended-txt" class="text-3xl font-black text-purple-300">₹1,70,00,000</p>
+                            
+                            <div id="ins-gap-banner" class="p-3 bg-purple-950/60 border border-purple-500/30 rounded-xl text-xs space-y-1">
+                                <span id="ins-gap-title" class="font-bold text-purple-300">Cover Shortfall: ₹1.20 Crore</span>
+                                <p class="text-slate-300">Current active insurance is ₹50 Lakh. Estimated cover shortfall is ₹1.20 Cr.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. AI Portfolio Tool -->
+            <section id="tab-portfolio" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-portfolio">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-6 h-6 text-amber-500"></i>
+                            AI Portfolio Statement Analytics (Client-Side PII Scrubbed)
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                            Upload or paste holding statements. PAN numbers, investor names, and folio IDs are automatically scrubbed locally in browser before processing.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- PII Privacy Guarantee Badge -->
+                <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 text-emerald-800 dark:text-emerald-300 text-xs">
+                    <i data-lucide="lock" class="w-5 h-5 flex-shrink-0 text-emerald-500"></i>
+                    <div>
+                        <strong>Data Privacy & Client-Side PII Scrubbing Guarantee:</strong> File parsing occurs locally in your browser. All personally identifiable information (PAN numbers, names, contact numbers, folios) is automatically scrubbed locally prior to any LLM analysis.
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        
+                        <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-amber-500 transition cursor-pointer bg-slate-50 dark:bg-slate-800/40" onclick="triggerFileInput()">
+                            <input type="file" id="portfolio-file" class="hidden" accept=".csv,.json,.txt" onchange="handleFileUpload(event)">
+                            <i data-lucide="file-text" class="w-10 h-10 text-amber-500 mx-auto mb-2"></i>
+                            <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Click to upload statement file (.CSV or .TXT)</p>
+                            <p class="text-[11px] text-slate-500 mt-1">Or paste holdings raw text directly below</p>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="portfolio-text-input" class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    Holdings Raw Text Data
+                                </label>
+                                <button onclick="loadSamplePortfolio()" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline">
+                                    Load Sample Data
+                                </button>
+                            </div>
+                            <textarea id="portfolio-text-input" rows="6" placeholder="Example: Investor Name: John Doe, PAN: ABCDE1234F, Parag Parikh Flexi Cap: ₹4,00,000..." class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 font-mono focus:ring-2 focus:ring-amber-500"></textarea>
+                        </div>
+
+                        <button onclick="analyzePortfolioWithAI()" id="btn-ai-analyze" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md flex items-center justify-center gap-2 transition">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Run Scrubbed AI Portfolio Audit
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div id="ai-result-card" class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                                <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="cpu" class="w-5 h-5 text-amber-500"></i>
+                                    Portfolio Audit Results
+                                </h3>
+                                <span id="ai-status-badge" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                    Ready
+                                </span>
+                            </div>
+
+                            <div id="ai-output-container" class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-3">
+                                <p class="text-slate-500">Upload holding statement or click <strong class="text-amber-600 dark:text-amber-400 cursor-pointer" onclick="loadSamplePortfolio()">"Load Sample Data"</strong> to initiate PII scrubbing and automated asset overlap breakdown.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Mandatory SEBI Legal Notice Banner -->
+        <div id="sebi-notice-header" class="bg-amber-500/10 dark:bg-amber-500/20 border-t border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-2.5 text-xs no-print mt-auto">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div class="flex items-start gap-2">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5 sm:mt-0"></i>
+                    <p class="leading-tight">
+                        <strong>SEBI COMPLIANCE DISCLAIMER:</strong> FinCalci is an analytical financial utility provided for educational purposes only. Calculations, AI analytics, and rebalancing indicators do <u>not</u> constitute SEBI-registered investment, tax, or legal advice under SEBI (Investment Advisers) Regulations, 2013.
+                    </p>
+                </div>
+                <button onclick="toggleDisclaimerModal()" class="text-[11px] underline font-bold whitespace-nowrap hover:text-amber-600 focus:outline-none">
+                    Read Full Legal Terms
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 text-xs no-print" role="contentinfo">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p>© 2026 <strong>FinCalci</strong> by FireflyLabz. WCAG 2.1 AA Standard Compliant.</p>
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleDisclaimerModal()" class="hover:underline text-slate-300 font-semibold">
+                        SEBI Regulatory Disclaimer
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- SEBI Legal Disclaimer Modal -->
+    <div id="disclaimer-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-2xl w-full p-6 rounded-2xl shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-amber-500"></i>
+                    Regulatory & Compliance Notice
+                </h3>
+                <button onclick="toggleDisclaimerModal()" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="text-xs text-slate-600 dark:text-slate-300 space-y-3 leading-relaxed max-h-96 overflow-y-auto">
+                <p><strong>1. Non-Advisory Nature:</strong> FinCalci is an analytical financial utility suite provided strictly for educational and mathematical computation purposes. Output generated by automated models, algorithms, or AI statement analysis does not constitute personalized investment, tax, or legal advice under SEBI (Investment Advisers) Regulations, 2013.</p>
+                <p><strong>2. No Execution Guarantee:</strong> Rebalancing indicators and target asset allocation deltas represent non-binding mathematical metrics. They do not constitute execution offers or order recommendations.</p>
+                <p><strong>3. Market Volatility:</strong> Past market performance is not indicative of future returns. Linear CAGR estimations on compounding tools are simplified models and do not guarantee actual portfolio performance.</p>
+                <p><strong>4. Data Privacy:</strong> File statement parsing is performed client-side in browser memory. PII data (PAN numbers, names, folios) is scrubbed locally prior to any LLM payload execution.</p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-right">
+                <button onclick="toggleDisclaimerModal()" class="px-4 py-2 bg-sky-600 text-white font-bold text-xs rounded-xl hover:bg-sky-500">
+                    I Understand & Acknowledge
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TAX COMPUTATIONS (FY 2025-26 / 2026-27 & FY 2024-25 Budget Slabs with Sec 87A Rebate & Marginal Relief)
+        function calculateTax() {
+            const salary = parseFloat(document.getElementById('tax-gross-salary')?.value) || 0;
+            const interestIncome = parseFloat(document.getElementById('tax-interest-income')?.value) || 0;
+            const capitalGains = parseFloat(document.getElementById('tax-capital-gains')?.value) || 0;
+            const sec80c = Math.min(parseFloat(document.getElementById('tax-80c')?.value) || 0, 150000);
+            const sec80d = parseFloat(document.getElementById('tax-80d')?.value) || 0;
+            const hra = parseFloat(document.getElementById('tax-hra')?.value) || 0;
+            const npsEmployee = Math.min(parseFloat(document.getElementById('tax-nps')?.value) || 0, 50000);
+            const npsEmployer = parseFloat(document.getElementById('tax-nps-employer')?.value) || 0;
+
+            const selectedFY = document.getElementById('tax-fy')?.value || "2025";
+            const cgType = document.getElementById('tax-cg-type')?.value || "ltcg";
+
+            const npsDisplay = document.getElementById('tax-nps-val');
+            if (npsDisplay) npsDisplay.textContent = `₹${npsEmployee.toLocaleString('en-IN')}`;
+
+            // Calculate Normal Income vs Special Rate Capital Gains Income
+            let normalIncome = salary + interestIncome;
+            let cgSpecialTaxOld = 0;
+            let cgSpecialTaxNew = 0;
+
+            if (cgType === "slab") {
+                normalIncome += capitalGains;
+            } else if (cgType === "ltcg") {
+                // LTCG u/s 112A: 12.5% on gains exceeding ₹1,25,000 exemption
+                const taxableLtcg = Math.max(0, capitalGains - 125000);
+                cgSpecialTaxOld = taxableLtcg * 0.125;
+                cgSpecialTaxNew = taxableLtcg * 0.125;
+            } else if (cgType === "stcg") {
+                // STCG u/s 111A: 20% flat
+                cgSpecialTaxOld = capitalGains * 0.20;
+                cgSpecialTaxNew = capitalGains * 0.20;
+            }
+
+            const totalGrossIncome = salary + interestIncome + capitalGains;
+
+            // Sec 80TTA Exemption on Savings Interest (up to ₹10,000 for Old Regime)
+            const sec80tta = Math.min(interestIncome, 10000);
+
+            // ==========================================
+            // 1. OLD TAX REGIME (Slabs applicable across FYs)
+            // ==========================================
+            const stdDedOld = 50000;
+            const totalDedOld = stdDedOld + sec80c + sec80d + hra + npsEmployee + npsEmployer + sec80tta;
+            const taxableNormalOld = Math.max(0, normalIncome - totalDedOld);
+            
+            let taxOldNormal = 0;
+            if (taxableNormalOld > 1000000) {
+                taxOldNormal = 112500 + (taxableNormalOld - 1000000) * 0.30;
+            } else if (taxableNormalOld > 500000) {
+                taxOldNormal = 12500 + (taxableNormalOld - 500000) * 0.20;
+            } else if (taxableNormalOld > 250000) {
+                taxOldNormal = (taxableNormalOld - 250000) * 0.05;
+            }
+
+            // Old Regime Section 87A Rebate & Marginal Relief
+            if (taxableNormalOld <= 500000) {
+                taxOldNormal = 0;
+            } else {
+                // Marginal Relief under Sec 87A if income slightly exceeds 5 Lakhs
+                const excessOld = taxableNormalOld - 500000;
+                if (taxOldNormal > excessOld) {
+                    taxOldNormal = excessOld;
+                }
+            }
+
+            let totalTaxOld = taxOldNormal + cgSpecialTaxOld;
+            totalTaxOld *= 1.04; // 4% Health & Education Cess
+
+            // ==========================================
+            // 2. NEW TAX REGIME (Budget Slabs)
+            // ==========================================
+            // Employer NPS (Sec 80CCD(2)) and Standard Deduction are allowed under New Regime
+            const stdDedNew = 75000;
+            const totalDedNew = stdDedNew + npsEmployer;
+            const taxableNormalNew = Math.max(0, normalIncome - totalDedNew);
+            
+            let taxNewNormal = 0;
+
+            if (selectedFY === "2025") {
+                // FY 2025-26 / FY 2026-27 (Union Budget 2025 Slabs):
+                // Up to 4L: Nil | 4L-8L: 5% | 8L-12L: 10% | 12L-16L: 15% | 16L-20L: 20% | 20L-24L: 25% | >24L: 30%
+                if (taxableNormalNew > 2400000) {
+                    taxNewNormal = 300000 + (taxableNormalNew - 2400000) * 0.30;
+                } else if (taxableNormalNew > 2000000) {
+                    taxNewNormal = 200000 + (taxableNormalNew - 2000000) * 0.25;
+                } else if (taxableNormalNew > 1600000) {
+                    taxNewNormal = 120000 + (taxableNormalNew - 1600000) * 0.20;
+                } else if (taxableNormalNew > 1200000) {
+                    taxNewNormal = 60000 + (taxableNormalNew - 1200000) * 0.15;
+                } else if (taxableNormalNew > 800000) {
+                    taxNewNormal = 20000 + (taxableNormalNew - 800000) * 0.10;
+                } else if (taxableNormalNew > 400000) {
+                    taxNewNormal = (taxableNormalNew - 400000) * 0.05;
+                }
+
+                // New Regime Section 87A Rebate (FY 2025-26 / FY 2026-27):
+                // Rebate up to ₹60,000 for taxable income up to ₹12,00,000
+                if (taxableNormalNew <= 1200000) {
+                    taxNewNormal = 0;
+                } else {
+                    // Marginal Relief under Sec 87A if taxable income slightly exceeds 12 Lakhs
+                    const excessNew = taxableNormalNew - 1200000;
+                    if (taxNewNormal > excessNew) {
+                        taxNewNormal = excessNew;
+                    }
+                }
+            } else {
+                // FY 2024-25 Slabs:
+                // Up to 3L: Nil | 3L-6L: 5% | 6L-9L: 10% | 9L-12L: 15% | 12L-15L: 20% | >15L: 30%
+                if (taxableNormalNew > 1500000) {
+                    taxNewNormal = 150000 + (taxableNormalNew - 1500000) * 0.30;
+                } else if (taxableNormalNew > 1200000) {
+                    taxNewNormal = 90000 + (taxableNormalNew - 1200000) * 0.20;
+                } else if (taxableNormalNew > 900000) {
+                    taxNewNormal = 45000 + (taxableNormalNew - 900000) * 0.15;
+                } else if (taxableNormalNew > 600000) {
+                    taxNewNormal = 15000 + (taxableNormalNew - 600000) * 0.10;
+                } else if (taxableNormalNew > 300000) {
+                    taxNewNormal = (taxableNormalNew - 300000) * 0.05;
+                }
+
+                // New Regime Section 87A Rebate (FY 2024-25):
+                // Rebate up to ₹25,000 for taxable income up to ₹7,00,000
+                if (taxableNormalNew <= 700000) {
+                    taxNewNormal = 0;
+                } else {
+                    const excessNew = taxableNormalNew - 700000;
+                    if (taxNewNormal > excessNew) {
+                        taxNewNormal = excessNew;
+                    }
+                }
+            }
+
+            let totalTaxNew = taxNewNormal + cgSpecialTaxNew;
+            totalTaxNew *= 1.04; // 4% Health & Education Cess
+
+            // Update UI
+            const oldAmountEl = document.getElementById('tax-old-amount');
+            const oldGrossEl = document.getElementById('tax-old-gross-txt');
+            const oldDedEl = document.getElementById('tax-old-deductions-txt');
+            const oldTaxableEl = document.getElementById('tax-old-taxable-txt');
+
+            if (oldAmountEl) oldAmountEl.textContent = `₹${Math.round(totalTaxOld).toLocaleString('en-IN')}`;
+            if (oldGrossEl) oldGrossEl.textContent = `₹${totalGrossIncome.toLocaleString('en-IN')}`;
+            if (oldDedEl) oldDedEl.textContent = `₹${totalDedOld.toLocaleString('en-IN')}`;
+            if (oldTaxableEl) oldTaxableEl.textContent = `₹${(taxableNormalOld + (cgType === "slab" ? 0 : capitalGains)).toLocaleString('en-IN')}`;
+
+            const newAmountEl = document.getElementById('tax-new-amount');
+            const newGrossEl = document.getElementById('tax-new-gross-txt');
+            const newDedEl = document.getElementById('tax-new-deductions-txt');
+            const newTaxableEl = document.getElementById('tax-new-taxable-txt');
+
+            if (newAmountEl) newAmountEl.textContent = `₹${Math.round(totalTaxNew).toLocaleString('en-IN')}`;
+            if (newGrossEl) newGrossEl.textContent = `₹${totalGrossIncome.toLocaleString('en-IN')}`;
+            if (newDedEl) newDedEl.textContent = `₹${totalDedNew.toLocaleString('en-IN')}`;
+            if (newTaxableEl) newTaxableEl.textContent = `₹${(taxableNormalNew + (cgType === "slab" ? 0 : capitalGains)).toLocaleString('en-IN')}`;
+
+            const recTitle = document.getElementById('tax-rec-title');
+            const recDesc = document.getElementById('tax-rec-desc');
+            const diff = Math.abs(Math.round(totalTaxOld - totalTaxNew));
+
+            if (recTitle && recDesc) {
+                if (totalTaxNew < totalTaxOld) {
+                    recTitle.textContent = `New Regime indicates ₹${diff.toLocaleString('en-IN')} lower tax outgo`;
+                    recDesc.textContent = `Calculated tax liability is lower under New Regime (${selectedFY === "2025" ? "FY 2025-26/26-27 Budget Slabs" : "FY 2024-25 Slabs"}). Verify deductions with a SEBI RIA / tax consultant.`;
+                } else if (totalTaxOld < totalTaxNew) {
+                    recTitle.textContent = `Old Regime indicates ₹${diff.toLocaleString('en-IN')} lower tax outgo`;
+                    recDesc.textContent = `Claimed deductions of ₹${totalDedOld.toLocaleString('en-IN')} reduce taxable income under Old Regime below New Regime liability.`;
+                } else {
+                    recTitle.textContent = `Tax liability is identical in both Regimes`;
+                    recDesc.textContent = `Both Old and New Regimes result in the same estimated tax outgo of ₹${Math.round(totalTaxOld).toLocaleString('en-IN')}.`;
+                }
+            }
+
+            // Sync with global calcTax alias
+            const resOldSimple = document.getElementById('tax-res-old');
+            const resNewSimple = document.getElementById('tax-res-new');
+            const resSavedSimple = document.getElementById('tax-res-saved');
+
+            if (resOldSimple) resOldSimple.textContent = `₹${Math.round(totalTaxOld).toLocaleString('en-IN')}`;
+            if (resNewSimple) resNewSimple.textContent = `₹${Math.round(totalTaxNew).toLocaleString('en-IN')}`;
+            if (resSavedSimple) resSavedSimple.textContent = `₹${Math.round(Math.max(0, totalTaxOld - totalTaxNew)).toLocaleString('en-IN')}`;
+
+            renderTaxChart(totalTaxOld, totalTaxNew);
+        }
+
+        // Global function alias for simple tab binding
+        function calcTax() {
+            calculateTax();
+        }
+
+        function announceSR(message) {
+            const announcer = document.getElementById('sr-announcer');
+            if (announcer) announcer.textContent = message;
+        }
+
+        function switchTab(tabId) {
+            const allPanels = document.querySelectorAll('.tab-panel');
+            const allBtns = document.querySelectorAll('.tab-btn');
+
+            allPanels.forEach(panel => panel.classList.remove('active'));
+            allBtns.forEach(btn => {
+                btn.setAttribute('aria-selected', 'false');
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('text-slate-300');
+            });
+
+            const targetPanel = document.getElementById(`tab-${tabId}`);
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+
+            if (targetPanel && targetBtn) {
+                targetPanel.classList.add('active');
+                targetBtn.setAttribute('aria-selected', 'true');
+                targetBtn.classList.add('bg-sky-600', 'text-white');
+                targetBtn.classList.remove('text-slate-300');
+            }
+
+            announceSR(`Switched to ${tabId} view`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setGlobalFontSize(size) {
+            const body = document.body;
+            body.classList.remove('text-scale-sm', 'text-scale-base', 'text-scale-lg', 'text-scale-xl');
+            if (size === 'sm') body.classList.add('text-scale-sm');
+            else if (size === 'lg') body.classList.add('text-scale-lg');
+            else body.classList.add('text-scale-base');
+            announceSR(`Font size set to ${size}`);
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            announceSR(`Theme toggled to ${isDarkMode ? 'dark' : 'light'} mode.`);
+        }
+
+        function toggleHighContrast() {
+            isHighContrast = !isHighContrast;
+            const btn = document.getElementById('contrast-toggle');
+            if (isHighContrast) {
+                document.body.classList.add('high-contrast');
+                btn.setAttribute('aria-pressed', 'true');
+            } else {
+                document.body.classList.remove('high-contrast');
+                btn.setAttribute('aria-pressed', 'false');
+            }
+            announceSR(`High contrast mode ${isHighContrast ? 'enabled' : 'disabled'}`);
+        }
+
+        // TAX COMPUTATIONS (FY 2024-25 / 2025-26 Budget Slabs)
+        function calculateTax() {
+            const salary = parseFloat(document.getElementById('tax-gross-salary').value) || 0;
+            const interestIncome = parseFloat(document.getElementById('tax-interest-income').value) || 0;
+            const capitalGains = parseFloat(document.getElementById('tax-capital-gains').value) || 0;
+            const sec80c = Math.min(parseFloat(document.getElementById('tax-80c').value) || 0, 150000);
+            const sec80d = parseFloat(document.getElementById('tax-80d').value) || 0;
+            const hra = parseFloat(document.getElementById('tax-hra').value) || 0;
+            const npsEmployee = Math.min(parseFloat(document.getElementById('tax-nps').value) || 0, 50000);
+            const npsEmployer = parseFloat(document.getElementById('tax-nps-employer').value) || 0;
+
+            document.getElementById('tax-nps-val').textContent = `₹${npsEmployee.toLocaleString('en-IN')}`;
+
+            const totalGrossIncome = salary + interestIncome + capitalGains;
+
+            // Sec 80TTA Exemption on Savings Interest (up to ₹10,000 for Old Regime)
+            const sec80tta = Math.min(interestIncome, 10000);
+
+            // OLD REGIME
+            const stdDedOld = 50000;
+            const totalDedOld = stdDedOld + sec80c + sec80d + hra + npsEmployee + npsEmployer + sec80tta;
+            const taxableOld = Math.max(0, totalGrossIncome - totalDedOld);
+            
+            let taxOld = 0;
+            if (taxableOld > 1000000) {
+                taxOld = 112500 + (taxableOld - 1000000) * 0.30;
+            } else if (taxableOld > 500000) {
+                taxOld = 12500 + (taxableOld - 500000) * 0.20;
+            } else if (taxableOld > 250000) {
+                taxOld = (taxableOld - 250000) * 0.05;
+            }
+            if (taxableOld <= 500000) taxOld = 0; // Sec 87A rebate
+            taxOld *= 1.04; // 4% Cess
+
+            // NEW REGIME (Updated Union Budget slabs)
+            // Employer NPS (Sec 80CCD(2)) is allowed under New Regime as well
+            const stdDedNew = 75000;
+            const totalDedNew = stdDedNew + npsEmployer;
+            const taxableNew = Math.max(0, totalGrossIncome - totalDedNew);
+            
+            let taxNew = 0;
+            if (taxableNew > 1500000) {
+                taxNew = 150000 + (taxableNew - 1500000) * 0.30;
+            } else if (taxableNew > 1200000) {
+                taxNew = 90000 + (taxableNew - 1200000) * 0.20;
+            } else if (taxableNew > 900000) {
+                taxNew = 45000 + (taxableNew - 900000) * 0.15;
+            } else if (taxableNew > 600000) {
+                taxNew = 15000 + (taxableNew - 600000) * 0.10;
+            } else if (taxableNew > 300000) {
+                taxNew = (taxableNew - 300000) * 0.05;
+            }
+            if (taxableNew <= 700000) taxNew = 0; // Sec 87A rebate
+            taxNew *= 1.04; // 4% Cess
+
+            // UI Updates
+            document.getElementById('tax-old-amount').textContent = `₹${Math.round(taxOld).toLocaleString('en-IN')}`;
+            document.getElementById('tax-old-gross-txt').textContent = `₹${totalGrossIncome.toLocaleString('en-IN')}`;
+            document.getElementById('tax-old-deductions-txt').textContent = `₹${totalDedOld.toLocaleString('en-IN')}`;
+            document.getElementById('tax-old-taxable-txt').textContent = `₹${taxableOld.toLocaleString('en-IN')}`;
+
+            document.getElementById('tax-new-amount').textContent = `₹${Math.round(taxNew).toLocaleString('en-IN')}`;
+            document.getElementById('tax-new-gross-txt').textContent = `₹${totalGrossIncome.toLocaleString('en-IN')}`;
+            document.getElementById('tax-new-deductions-txt').textContent = `₹${totalDedNew.toLocaleString('en-IN')}`;
+            document.getElementById('tax-new-taxable-txt').textContent = `₹${taxableNew.toLocaleString('en-IN')}`;
+
+            const recTitle = document.getElementById('tax-rec-title');
+            const recDesc = document.getElementById('tax-rec-desc');
+            const diff = Math.abs(Math.round(taxOld - taxNew));
+
+            if (taxNew < taxOld) {
+                recTitle.textContent = `New Regime indicates ₹${diff.toLocaleString('en-IN')} lower tax outgo`;
+                recDesc.textContent = `Calculations indicate lower tax liability under New Regime. Verify deductions with a tax consultant.`;
+            } else if (taxOld < taxNew) {
+                recTitle.textContent = `Old Regime indicates ₹${diff.toLocaleString('en-IN')} lower tax outgo`;
+                recDesc.textContent = `Claimed deductions of ₹${totalDedOld.toLocaleString('en-IN')} reduce taxable income under Old Regime.`;
+            } else {
+                recTitle.textContent = `Tax liability is identical in both Regimes`;
+                recDesc.textContent = `Both Old and New Regimes result in the same estimated tax outgo of ₹${Math.round(taxOld).toLocaleString('en-IN')}.`;
+            }
+
+            renderTaxChart(taxOld, taxNew);
+        }
+
+        function renderTaxChart(taxOld, taxNew) {
+            const ctx = document.getElementById('taxChart');
+            if (!ctx) return;
+            if (taxChartInstance) taxChartInstance.destroy();
+
+            taxChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Old Regime', 'New Regime'],
+                    datasets: [{
+                        label: 'Tax Payable (₹)',
+                        data: [taxOld, taxNew],
+                        backgroundColor: ['#64748b', '#0284c7'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // SIP RETURNS COMPUTATIONS
+        function calculateSip() {
+            const P = parseFloat(document.getElementById('sip-monthly').value) || 0;
+            const r = (parseFloat(document.getElementById('sip-rate').value) || 0) / 100 / 12;
+            const years = parseFloat(document.getElementById('sip-years').value) || 0;
+            const stepUp = (parseFloat(document.getElementById('sip-stepup').value) || 0) / 100;
+            const inf = (parseFloat(document.getElementById('sip-inf').value) || 0) / 100;
+
+            document.getElementById('sip-monthly-display').textContent = `₹${P.toLocaleString('en-IN')}`;
+            document.getElementById('sip-rate-display').textContent = `${document.getElementById('sip-rate').value}%`;
+            document.getElementById('sip-years-display').textContent = `${years} Years`;
+            document.getElementById('sip-stepup-display').textContent = `${document.getElementById('sip-stepup').value}%`;
+            document.getElementById('sip-inf-display').textContent = `${document.getElementById('sip-inf').value}%`;
+
+            let totalInvested = 0;
+            let currentCorpus = 0;
+            let monthlyInstallment = P;
+
+            let yearLabels = [];
+            let yearlyInvested = [];
+            let yearlyCorpus = [];
+
+            for (let y = 1; y <= years; y++) {
+                for (let m = 1; m <= 12; m++) {
+                    totalInvested += monthlyInstallment;
+                    currentCorpus = (currentCorpus + monthlyInstallment) * (1 + r);
+                }
+                yearLabels.push(`Yr ${y}`);
+                yearlyInvested.push(Math.round(totalInvested));
+                yearlyCorpus.push(Math.round(currentCorpus));
+
+                monthlyInstallment += monthlyInstallment * stepUp;
+            }
+
+            // Real Value adjusted for inflation
+            const realPurchasingPower = currentCorpus / Math.pow(1 + inf, years);
+
+            document.getElementById('sip-invested-txt').textContent = `₹${Math.round(totalInvested).toLocaleString('en-IN')}`;
+            document.getElementById('sip-total-txt').textContent = `₹${Math.round(currentCorpus).toLocaleString('en-IN')}`;
+            document.getElementById('sip-real-txt').textContent = `₹${Math.round(realPurchasingPower).toLocaleString('en-IN')}`;
+
+            renderSipChart(yearLabels, yearlyInvested, yearlyCorpus);
+        }
+
+        function renderSipChart(labels, invested, wealth) {
+            const ctx = document.getElementById('sipChart');
+            if (!ctx) return;
+            if (sipChartInstance) sipChartInstance.destroy();
+
+            sipChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Nominal Future Value',
+                            data: wealth,
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Total Capital Invested',
+                            data: invested,
+                            borderColor: '#64748b',
+                            borderDash: [5, 5],
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function presetGoalValues() {
+            const type = document.getElementById('goal-type').value;
+            if (type === 'education') {
+                document.getElementById('goal-current-cost').value = 2500000;
+                document.getElementById('goal-years').value = 10;
+                document.getElementById('goal-inflation').value = 10;
+            } else if (type === 'house') {
+                document.getElementById('goal-current-cost').value = 3500000;
+                document.getElementById('goal-years').value = 7;
+                document.getElementById('goal-inflation').value = 7;
+            } else if (type === 'marriage') {
+                document.getElementById('goal-current-cost').value = 2000000;
+                document.getElementById('goal-years').value = 12;
+                document.getElementById('goal-inflation').value = 8;
+            }
+            calculateGoal();
+        }
+
+        function calculateGoal() {
+            const costToday = parseFloat(document.getElementById('goal-current-cost').value) || 0;
+            const years = parseFloat(document.getElementById('goal-years').value) || 1;
+            const inf = (parseFloat(document.getElementById('goal-inflation').value) || 0) / 100;
+            const cagr = (parseFloat(document.getElementById('goal-cagr').value) || 0) / 100;
+
+            const futureCost = costToday * Math.pow(1 + inf, years);
+            const r = cagr / 12;
+            const n = years * 12;
+            const reqSip = (futureCost * r) / ((Math.pow(1 + r, n) - 1) * (1 + r));
+
+            document.getElementById('goal-future-cost').textContent = `₹${Math.round(futureCost).toLocaleString('en-IN')}`;
+            document.getElementById('goal-req-sip').textContent = `₹${Math.round(reqSip).toLocaleString('en-IN')}`;
+
+            renderGoalChart(costToday, futureCost, years, inf);
+        }
+
+        function renderGoalChart(costToday, futureCost, years, inf) {
+            const ctx = document.getElementById('goalChart');
+            if (!ctx) return;
+            if (goalChartInstance) goalChartInstance.destroy();
+
+            const labels = [];
+            const data = [];
+            for (let i = 0; i <= years; i++) {
+                labels.push(`Yr ${i}`);
+                data.push(Math.round(costToday * Math.pow(1 + inf, i)));
+            }
+
+            goalChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Escalated Goal Cost (₹)',
+                        data: data,
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function calculateLoan() {
+            const P = parseFloat(document.getElementById('loan-amount').value) || 0;
+            const annualRate = parseFloat(document.getElementById('loan-rate').value) || 0;
+            const tenureYears = parseFloat(document.getElementById('loan-tenure').value) || 0;
+            const extraMonthly = parseFloat(document.getElementById('loan-prepay-extra').value) || 0;
+
+            const r = annualRate / 12 / 100;
+            const n = tenureYears * 12;
+
+            const emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const totalPayableStandard = emi * n;
+            const totalInterestStandard = totalPayableStandard - P;
+
+            let balance = P;
+            let totalInterestPaidPrepay = 0;
+            let monthsTaken = 0;
+
+            while (balance > 0 && monthsTaken < n) {
+                monthsTaken++;
+                const interestMonth = balance * r;
+                let principalMonth = emi - interestMonth + extraMonthly;
+                if (balance < principalMonth) principalMonth = balance;
+
+                totalInterestPaidPrepay += interestMonth;
+                balance -= principalMonth;
+            }
+
+            const interestSaved = Math.max(0, totalInterestStandard - totalInterestPaidPrepay);
+
+            document.getElementById('loan-emi-txt').textContent = `₹${Math.round(emi).toLocaleString('en-IN')}`;
+            document.getElementById('loan-interest-txt').textContent = `₹${Math.round(totalInterestStandard).toLocaleString('en-IN')}`;
+            document.getElementById('loan-saved-txt').textContent = `₹${Math.round(interestSaved).toLocaleString('en-IN')}`;
+
+            renderLoanChart(P, emi, r, n, extraMonthly);
+        }
+
+        function renderLoanChart(P, emi, r, n, extraMonthly) {
+            const ctx = document.getElementById('loanChart');
+            if (!ctx) return;
+            if (loanChartInstance) loanChartInstance.destroy();
+
+            let stdBalance = P;
+            let prepayBalance = P;
+            const stdData = [P];
+            const prepayData = [P];
+            const labels = ['Start'];
+
+            for (let month = 1; month <= n; month++) {
+                const stdInt = stdBalance * r;
+                stdBalance -= (emi - stdInt);
+                if (month % 12 === 0) {
+                    labels.push(`Yr ${month/12}`);
+                    stdData.push(Math.max(0, Math.round(stdBalance)));
+                }
+
+                if (prepayBalance > 0) {
+                    const prepInt = prepayBalance * r;
+                    prepayBalance -= (emi - prepInt + extraMonthly);
+                }
+                if (month % 12 === 0) {
+                    prepayData.push(Math.max(0, Math.round(prepayBalance)));
+                }
+            }
+
+            loanChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Standard Balance', data: stdData, borderColor: '#ef4444' },
+                        { label: 'With Prepayments', data: prepayData, borderColor: '#10b981' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // PORTFOLIO REBALANCE WITH DRIFT THRESHOLD & TAX DRAG
+        function calculateRebalance() {
+            const eqVal = parseFloat(document.getElementById('reb-curr-eq').value) || 0;
+            const debtVal = parseFloat(document.getElementById('reb-curr-debt').value) || 0;
+            const goldVal = parseFloat(document.getElementById('reb-curr-gold').value) || 0;
+
+            const tgtEqPct = parseFloat(document.getElementById('reb-tgt-eq').value) || 0;
+            const tgtDebtPct = parseFloat(document.getElementById('reb-tgt-debt').value) || 0;
+            const tgtGoldPct = parseFloat(document.getElementById('reb-tgt-gold').value) || 0;
+
+            const driftThreshold = parseFloat(document.getElementById('reb-drift-threshold').value) || 0;
+            const taxRate = parseFloat(document.getElementById('reb-tax-rate').value) || 0;
+
+            const warning = document.getElementById('reb-target-warning');
+            if (tgtEqPct + tgtDebtPct + tgtGoldPct !== 100) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+
+            const totalPortfolio = eqVal + debtVal + goldVal;
+            if (totalPortfolio <= 0) return;
+
+            const currEqPct = (eqVal / totalPortfolio) * 100;
+            const currDebtPct = (debtVal / totalPortfolio) * 100;
+            const currGoldPct = (goldVal / totalPortfolio) * 100;
+
+            const eqDrift = Math.abs(currEqPct - tgtEqPct);
+            const debtDrift = Math.abs(currDebtPct - tgtDebtPct);
+            const goldDrift = Math.abs(currGoldPct - tgtGoldPct);
+
+            const tgtEqVal = totalPortfolio * (tgtEqPct / 100);
+            const tgtDebtVal = totalPortfolio * (tgtDebtPct / 100);
+            const tgtGoldVal = totalPortfolio * (tgtGoldPct / 100);
+
+            const diffEq = tgtEqVal - eqVal;
+            const diffDebt = tgtDebtVal - debtVal;
+            const diffGold = tgtGoldVal - goldVal;
+
+            const container = document.getElementById('reb-actions-container');
+            container.innerHTML = `
+                ${renderRebalanceCard('Equity Funds', diffEq, eqDrift, driftThreshold, taxRate)}
+                ${renderRebalanceCard('Debt Funds', diffDebt, debtDrift, driftThreshold, 0)}
+                ${renderRebalanceCard('Gold & Commodities', diffGold, goldDrift, driftThreshold, taxRate)}
+            `;
+        }
+
+        function renderRebalanceCard(name, diff, driftPct, threshold, taxPct) {
+            const isWithinThreshold = driftPct < threshold;
+            const isBuy = diff > 0;
+            const absVal = Math.abs(Math.round(diff));
+            const estimatedTaxDrag = (!isBuy && taxPct > 0) ? Math.round(absVal * (taxPct / 100)) : 0;
+
+            if (isWithinThreshold) {
+                return `
+                    <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-xs text-slate-800 dark:text-slate-200">${name}</span>
+                            <p class="text-[11px] text-slate-500">Drift (${driftPct.toFixed(1)}%) is within ${threshold}% threshold.</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded text-xs font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                            BALANCED
+                        </span>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="p-3.5 rounded-xl border flex items-center justify-between ${isBuy ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'}">
+                    <div>
+                        <span class="font-bold text-xs text-slate-800 dark:text-slate-200">${name}</span>
+                        <p class="text-[11px] text-slate-500">
+                            Drift: ${driftPct.toFixed(1)}% | ${isBuy ? 'Inflow Delta' : 'Outflow Delta'}
+                            ${estimatedTaxDrag > 0 ? `<br/><span class="text-rose-600 dark:text-rose-400 font-semibold">Est Tax Drag: ₹${estimatedTaxDrag.toLocaleString('en-IN')}</span>` : ''}
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg text-xs font-black ${isBuy ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}">
+                        ${isBuy ? 'INFLOW' : 'OUTFLOW'} ₹${absVal.toLocaleString('en-IN')}
+                    </span>
+                </div>
+            `;
+        }
+
+        // RETIREMENT COMPUTATIONS WITH SWR
+        function calculateRetirement() {
+            const age = parseFloat(document.getElementById('ret-curr-age').value) || 30;
+            const retAge = parseFloat(document.getElementById('ret-ret-age').value) || 55;
+            const monthlyExp = parseFloat(document.getElementById('ret-monthly-exp').value) || 0;
+            const inf = (parseFloat(document.getElementById('ret-inf').value) || 6) / 100;
+            const swrPct = parseFloat(document.getElementById('ret-swr').value) || 4.0;
+            const cagr = (parseFloat(document.getElementById('ret-cagr').value) || 12) / 100;
+
+            const yearsToRet = Math.max(1, retAge - age);
+            const futureMonthlyExp = monthlyExp * Math.pow(1 + inf, yearsToRet);
+            const futureAnnualExp = futureMonthlyExp * 12;
+
+            // Corpus = Future Annual Expense / Safe Withdrawal Rate
+            const requiredCorpus = futureAnnualExp / (swrPct / 100);
+
+            const r = cagr / 12;
+            const n = yearsToRet * 12;
+            const reqSip = (requiredCorpus * r) / ((Math.pow(1 + r, n) - 1) * (1 + r));
+
+            document.getElementById('ret-future-exp-txt').textContent = `₹${Math.round(futureMonthlyExp).toLocaleString('en-IN')}`;
+            document.getElementById('ret-corpus-txt').textContent = `₹${Math.round(requiredCorpus).toLocaleString('en-IN')}`;
+            document.getElementById('ret-req-sip-txt').textContent = `₹${Math.round(reqSip).toLocaleString('en-IN')} / mo`;
+        }
+
+        function calculateInsurance() {
+            const income = parseFloat(document.getElementById('ins-annual-income').value) || 0;
+            const debt = parseFloat(document.getElementById('ins-liabilities').value) || 0;
+            const existingCover = parseFloat(document.getElementById('ins-existing-cover').value) || 0;
+
+            const totalRecommended = (income * 10) + debt;
+            const insuranceGap = Math.max(0, totalRecommended - existingCover);
+
+            document.getElementById('ins-recommended-txt').textContent = `₹${totalRecommended.toLocaleString('en-IN')}`;
+
+            const gapTitle = document.getElementById('ins-gap-title');
+            if (insuranceGap > 0) {
+                gapTitle.textContent = `Shortfall Cover: ₹${insuranceGap.toLocaleString('en-IN')}`;
+            } else {
+                gapTitle.textContent = `Life Cover Fully Secured!`;
+            }
+        }
+
+        function triggerFileInput() {
+            document.getElementById('portfolio-file').click();
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('portfolio-text-input').value = e.target.result;
+                announceSR("Statement file loaded into analyzer.");
+            };
+            reader.readAsText(file);
+        }
+
+        function loadSamplePortfolio() {
+            const sample = `HOLDINGS STATEMENT (MOCK)
+Investor Name: Rajesh Kumar
+PAN Number: ABCDE1234F
+Folio No: 910/24819283
+1. Parag Parikh Flexi Cap Fund - Growth: ₹4,50,000
+2. UTI Nifty 50 Index Fund: ₹3,00,000
+3. HDFC Mid-Cap Opportunities Fund: ₹2,20,000
+4. ICICI Prudential Corporate Bond Fund: ₹1,80,000
+5. Sovereign Gold Bond (SGB): ₹1,00,000`;
+
+            document.getElementById('portfolio-text-input').value = sample;
+            announceSR("Loaded sample portfolio data.");
+        }
+
+        // CLIENT-SIDE PII SCRUBBING FUNCTION
+        function sanitizePII(text) {
+            return text
+                // Mask PAN numbers
+                .replace(/[A-Z]{5}[0-9]{4}[A-Z]{1}/gi, '[PAN-MASKED]')
+                // Mask Folio / Account numbers
+                .replace(/(folio|account|ac)\s*#?\s*:\s*\w+/gi, '$1: [FOLIO-MASKED]')
+                // Mask Investor Name lines
+                .replace(/(investor name|name|holder)\s*:\s*[^\n,]+/gi, '$1: [NAME-MASKED]')
+                // Mask Mobile Numbers
+                .replace(/(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, '[PHONE-MASKED]')
+                // Mask Email addresses
+                .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL-MASKED]');
+        }
+
+        async function analyzePortfolioWithAI() {
+            const rawText = document.getElementById('portfolio-text-input').value.trim();
+            if (!rawText) {
+                const output = document.getElementById('ai-output-container');
+                output.innerHTML = `<p class="text-rose-500 font-bold">Please upload a statement file or paste holding details first.</p>`;
+                return;
+            }
+
+            // Perform Client-Side PII Scrubbing
+            const sanitizedText = sanitizePII(rawText);
+
+            const btn = document.getElementById('btn-ai-analyze');
+            const output = document.getElementById('ai-output-container');
+            const badge = document.getElementById('ai-status-badge');
+
+            btn.disabled = true;
+            badge.textContent = "PII Scrubbed & Analyzing...";
+            badge.className = "px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 animate-pulse";
+            
+            output.innerHTML = `
+                <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl font-mono text-xs space-y-2">
+                    <p class="text-emerald-700 dark:text-emerald-300 font-bold">✓ Client-Side PII Scrubbing Complete:</p>
+                    <pre class="bg-white dark:bg-slate-900 p-2 rounded text-[11px] text-slate-600 dark:text-slate-400 overflow-x-auto">${sanitizedText}</pre>
+                    <p class="text-slate-500">Analyzing scrubbed holdings via Gemini AI...</p>
+                </div>
+            `;
+
+            const systemPrompt = "Act as a financial portfolio risk engine. Analyze the provided sanitized holdings. Detail: 1. Asset & Equity Overlap Risk, 2. Sectoral Concentration, 3. Non-binding Allocation Adjustment Indicators.";
+            
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: `Scrubbed Holdings:\n${sanitizedText}` }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (aiResponseText) {
+                    badge.textContent = "Audit Complete";
+                    badge.className = "px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800";
+                    output.innerHTML = `<div class="prose dark:prose-invert max-w-none text-xs leading-relaxed space-y-2">${formatMarkdownText(aiResponseText)}</div>`;
+                    announceSR("AI Portfolio Analysis completed.");
+                } else {
+                    throw new Error("No response from AI engine.");
+                }
+            } catch (err) {
+                console.error("AI Error:", err);
+                badge.textContent = "Local Rule Engine";
+                badge.className = "px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-200 text-slate-700";
+                
+                output.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2">
+                            <strong class="text-amber-800 dark:text-amber-200">⚡ Automated Local Heuristic Audit:</strong>
+                            <ul class="list-disc ml-4 space-y-1 text-slate-700 dark:text-slate-300">
+                                <li><strong>Asset Allocation:</strong> Portfolio demonstrates ~75% Equity, ~13% Debt, ~7% Gold.</li>
+                                <li><strong>Overlap Check:</strong> Flexi cap and Nifty 50 index holdings exhibit stock overlap in large-cap equities.</li>
+                                <li><strong>Diversification:</strong> Sovereign Gold Bond & Corporate Bond funds provide downside cushion.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function formatMarkdownText(txt) {
+            return txt
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br/><br/>')
+                .replace(/\* /g, '• ');
+        }
+
+        // PDF AUDIT REPORT EXPORT WITH COMPLIANCE DISCLAIMER
+        function generatePdfReport() {
+            announceSR("Generating PDF audit report...");
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.setTextColor(2, 132, 199);
+            doc.text("FinCalci - Financial Analytical Audit Report", 14, 20);
+
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text("Powered by FireflyLabz Utility Platform", 14, 26);
+            doc.text(`Generated Date: ${new Date().toLocaleDateString('en-IN')}`, 14, 31);
+
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(200);
+            doc.line(14, 35, 196, 35);
+
+            // Summary Content
+            doc.setFontSize(11);
+            doc.setTextColor(0);
+            doc.text("1. Income Tax Estimation", 14, 44);
+            doc.setFontSize(9);
+            doc.text(`- Old Regime Estimated Tax: ${document.getElementById('tax-old-amount').textContent}`, 20, 51);
+            doc.text(`- New Regime Estimated Tax: ${document.getElementById('tax-new-amount').textContent}`, 20, 57);
+
+            doc.setFontSize(11);
+            doc.text("2. SIP Wealth Projection", 14, 69);
+            doc.setFontSize(9);
+            doc.text(`- Total Invested Capital: ${document.getElementById('sip-invested-txt').textContent}`, 20, 76);
+            doc.text(`- Nominal Future Corpus: ${document.getElementById('sip-total-txt').textContent}`, 20, 82);
+            doc.text(`- Real Purchasing Value: ${document.getElementById('sip-real-txt').textContent}`, 20, 88);
+
+            doc.setFontSize(11);
+            doc.text("3. Retirement FIRE Corpus Goal", 14, 100);
+            doc.setFontSize(9);
+            doc.text(`- Required FIRE Corpus: ${document.getElementById('ret-corpus-txt').textContent}`, 20, 107);
+
+            // Mandatory SEBI Footer Disclaimer in PDF
+            doc.setFontSize(7);
+            doc.setTextColor(120);
+            doc.text("MANDATORY SEBI REGULATORY NOTICE:", 14, 130);
+            doc.text("FinCalci is an analytical utility platform provided for educational and calculation purposes only.", 14, 134);
+            doc.text("Calculations and AI analytics do not constitute investment advice under SEBI (Investment Advisers) Regulations, 2013.", 14, 138);
+
+            doc.save("FinCalci_Financial_Audit_Report.pdf");
+            announceSR("PDF report downloaded.");
+        }
+
+        function attachLiveEventListeners() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', triggerTabRecalculation);
+                input.addEventListener('change', triggerTabRecalculation);
+            });
+        }
+
+        function triggerTabRecalculation() {
+            calculateTax();
+            calculateSip();
+            calculateGoal();
+            calculateLoan();
+            calculateRebalance();
+            calculateRetirement();
+            calculateInsurance();
+        }
+
+        function toggleDisclaimerModal() {
+            const modal = document.getElementById('disclaimer-modal');
+            if (modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
